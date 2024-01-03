@@ -10,10 +10,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
@@ -55,7 +57,16 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
     private VBox vboxMedia3;
 
     @FXML
+    private VBox vboxMedia4;
+
+    @FXML
     private HBox hboxMedia;
+
+    @FXML
+    private HBox header;
+
+    @FXML
+    private Pagination paging;
 
     @FXML
     private SplitMenuButton splitMenuBtnSearch;
@@ -92,6 +103,7 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
      */
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
+        header.setHgrow(paging, Priority.ALWAYS);
         setBController(new HomeController());
         try {
             List medium = getBController().getAllMedia();
@@ -122,14 +134,39 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
                 throw new ViewCartException(Arrays.toString(e1.getStackTrace()).replaceAll(", ", "\n"));
             }
         });
-        addMediaHome(this.homeItems);
+        setupPagination();
+
         addMenuItem(0, "Book", splitMenuBtnSearch);
         addMenuItem(1, "DVD", splitMenuBtnSearch);
         addMenuItem(2, "CD", splitMenuBtnSearch);
     }
 
+    private void setupPagination() {
+        int itemsPerPage = 12;
+        int numPages = (int) Math.ceil((double) homeItems.size() / itemsPerPage);
+        paging.setPageCount(numPages);
+        paging.setPageFactory(this::createPage);
+    
+        // paging.setOnMouseClicked(event -> {
+        //     int currentPageIndex = paging.getCurrentPageIndex();
+        //     System.out.println("Switched to page: " + currentPageIndex);
+        // });
+    }
+
+    private VBox createPage(int pageIndex) {
+        VBox pageBox = new VBox();
+    
+        int itemsPerPage = 12;
+        int startIndex = pageIndex * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, homeItems.size());
+    
+        addMediaHome(homeItems.subList(startIndex, endIndex));
+    
+        return pageBox;
+    }
+
     public void setImage() {
-        // fix image path caused by fxml
+        // fix image path caused by fxml    
         File file1 = new File(Configs.IMAGE_PATH + "/" + "Logo.png");
         Image img1 = new Image(file1.toURI().toString());
         aimsImage.setImage(img1);
@@ -143,24 +180,46 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
      * @param items
      */
     public void addMediaHome(List items) {
-        ArrayList mediaItems = (ArrayList) ((ArrayList) items).clone();
-        hboxMedia.getChildren().forEach(node -> {
-            VBox vBox = (VBox) node;
-            vBox.getChildren().clear();
-        });
+        // Reset the content of the hboxMedia
+        vboxMedia1.getChildren().clear();
+        vboxMedia2.getChildren().clear();
+        vboxMedia3.getChildren().clear();
+        vboxMedia4.getChildren().clear();
+    
+        // Add media items to the hboxMedia
+        ArrayList mediaItems = new ArrayList(items);
         while (!mediaItems.isEmpty()) {
-            hboxMedia.getChildren().forEach(node -> {
-                int vid = hboxMedia.getChildren().indexOf(node);
-                VBox vBox = (VBox) node;
-                while (vBox.getChildren().size() < 3 && !mediaItems.isEmpty()) {
+            for (int j = 0; j < 3 && !mediaItems.isEmpty(); j++) {
+                if (!mediaItems.isEmpty()) {
                     MediaHandler media = (MediaHandler) mediaItems.get(0);
-                    vBox.getChildren().add(media.getContent());
+                    vboxMedia1.getChildren().add(media.getContent());
                     mediaItems.remove(media);
                 }
-            });
-            return;
+            }
+            for (int j = 0; j < 3 && !mediaItems.isEmpty(); j++) {
+                if (!mediaItems.isEmpty()) {
+                    MediaHandler media = (MediaHandler) mediaItems.get(0);
+                    vboxMedia2.getChildren().add(media.getContent());
+                    mediaItems.remove(media);
+                }
+            }
+            for (int j = 0; j < 3 && !mediaItems.isEmpty(); j++) {
+                if (!mediaItems.isEmpty()) {
+                    MediaHandler media = (MediaHandler) mediaItems.get(0);
+                    vboxMedia3.getChildren().add(media.getContent());
+                    mediaItems.remove(media);
+                }
+            }
+            for (int j = 0; j < 3 && !mediaItems.isEmpty(); j++) {
+                if (!mediaItems.isEmpty()) {
+                    MediaHandler media = (MediaHandler) mediaItems.get(0);
+                    vboxMedia4.getChildren().add(media.getContent());
+                    mediaItems.remove(media);
+                }
+            }
         }
     }
+    
 
     /**
      * @param position
