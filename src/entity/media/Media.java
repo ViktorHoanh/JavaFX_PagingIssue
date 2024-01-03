@@ -3,6 +3,7 @@ package entity.media;
 import entity.db.AIMSDB;
 import utils.Utils;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -113,6 +114,32 @@ public class Media {
             medium.add(media);
         }
         return medium;
+    }
+
+    /**
+     * @param name
+     * @return List Media
+     * @throws SQLException
+     */
+    public List<Media> getMediaByName(String name) throws SQLException {
+        List<Media> mediaList = new ArrayList<>();
+        String sql = "SELECT * FROM Media WHERE title LIKE ?;";
+        try (PreparedStatement preparedStatement = AIMSDB.getConnection().prepareStatement(sql)) {
+            preparedStatement.setString(1, "%" + name + "%");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Media media = new Media()
+                        .setId(resultSet.getInt("id"))
+                        .setTitle(resultSet.getString("title"))
+                        .setQuantity(resultSet.getInt("quantity"))
+                        .setCategory(resultSet.getString("category"))
+                        .setMediaURL(resultSet.getString("imageUrl"))
+                        .setPrice(resultSet.getInt("price"))
+                        .setType(resultSet.getString("type"));
+                mediaList.add(media);
+            }
+        }
+        return mediaList;
     }
 
     /**

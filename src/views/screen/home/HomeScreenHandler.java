@@ -7,11 +7,13 @@ import entity.cart.Cart;
 import entity.media.Media;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.SplitMenuButton;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -46,6 +48,9 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
 
     @FXML
     private ImageView cartImage;
+
+    @FXML
+    private TextField txtSearch;
 
     @FXML
     private VBox vboxMedia1;
@@ -136,10 +141,43 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
         });
         setupPagination();
 
+        searchByName();
         addMenuItem(0, "Book", splitMenuBtnSearch);
         addMenuItem(1, "DVD", splitMenuBtnSearch);
         addMenuItem(2, "CD", splitMenuBtnSearch);
     }
+
+    private void searchByName(){
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
+            try {
+                handleSearch(newValue);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void handleSearch(String title) throws IOException {
+        try {
+            List<Media> searchResults = getBController().getMediaByName(title);
+    
+            List<MediaHandler> searchResultHandlers = new ArrayList<>();
+            for (Media media : searchResults) {
+                MediaHandler mediaHandler = new MediaHandler(Configs.HOME_MEDIA_PATH, media, this);
+                searchResultHandlers.add(mediaHandler);
+            }
+    
+            addMediaHome(searchResultHandlers);
+
+            int itemsPerPage = 12;
+            int numPages = (int) Math.ceil((double) searchResultHandlers.size() / itemsPerPage);
+            paging.setPageCount(numPages);
+        } catch (SQLException e) {
+            LOGGER.info("Error occurred during search: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
 
     private void setupPagination() {
         int itemsPerPage = 12;
@@ -254,5 +292,4 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
         });
         menuButton.getItems().add(position, menuItem);
     }
-
 }

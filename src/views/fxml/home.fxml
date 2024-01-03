@@ -37,7 +37,7 @@
                     <children>
                         <Pane prefHeight="102.0" prefWidth="562.0">
                             <children>
-                                <TextField layoutX="17.0" layoutY="27.0" prefHeight="48.0" prefWidth="528.0">
+                                <TextField fx:id="txtSearch" layoutX="17.0" layoutY="27.0" prefHeight="48.0" prefWidth="528.0">
                                     <font>
                                         <Font size="18.0" />
                                     </font>
