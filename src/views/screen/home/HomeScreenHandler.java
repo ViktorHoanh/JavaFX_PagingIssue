@@ -139,39 +139,51 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
                 throw new ViewCartException(Arrays.toString(e1.getStackTrace()).replaceAll(", ", "\n"));
             }
         });
-        setupPagination();
 
-        searchByName();
+        splitMenuBtnSearch.setOnMouseClicked(e -> {
+            hboxMedia.getChildren().forEach(node -> {
+                VBox vBox = (VBox) node;
+                vBox.getChildren().clear();
+            });
+            String searchText = txtSearch.getText().trim();
+            if (!searchText.isEmpty()) {
+            try {
+                searchByName(searchText);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            } else {
+                addMediaHome(homeItems);
+                setupPagination(homeItems);
+            }
+            });
+        setupPagination(homeItems);
+        
         addMenuItem(0, "Book", splitMenuBtnSearch);
         addMenuItem(1, "DVD", splitMenuBtnSearch);
         addMenuItem(2, "CD", splitMenuBtnSearch);
     }
 
-    private void searchByName(){
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                handleSearch(newValue);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    private void handleSearch(String title) throws IOException {
+    /**
+     * @param title
+     * @throws IOException
+     */
+    private void searchByName(String title) throws IOException {
         try {
-            List<Media> searchResults = getBController().getMediaByName(title);
-    
-            List<MediaHandler> searchResultHandlers = new ArrayList<>();
-            for (Media media : searchResults) {
-                MediaHandler mediaHandler = new MediaHandler(Configs.HOME_MEDIA_PATH, media, this);
-                searchResultHandlers.add(mediaHandler);
-            }
-    
-            addMediaHome(searchResultHandlers);
+            List searchResults = getBController().getMediaByName(title);
 
-            int itemsPerPage = 12;
-            int numPages = (int) Math.ceil((double) searchResultHandlers.size() / itemsPerPage);
-            paging.setPageCount(numPages);
+            //ArrayList modifiedSearchResulst = new ArrayList(searchResults);
+            
+            List<MediaHandler> Resulst = new ArrayList<MediaHandler>();
+            for (Object object : searchResults) {
+                Media media = (Media) object;
+                MediaHandler m1 = new MediaHandler(Configs.HOME_MEDIA_PATH, media, this);
+                Resulst.add(m1);
+            }
+
+            addMediaHome(Resulst);
+
+            setupPagination(Resulst);
         } catch (SQLException e) {
             LOGGER.info("Error occurred during search: " + e.getMessage());
             e.printStackTrace();
@@ -179,26 +191,21 @@ public class HomeScreenHandler extends BaseScreenHandler implements Initializabl
     }
     
 
-    private void setupPagination() {
+    private void setupPagination(List items) {
         int itemsPerPage = 12;
-        int numPages = (int) Math.ceil((double) homeItems.size() / itemsPerPage);
+        int numPages = (int) Math.ceil((double) items.size() / itemsPerPage);
         paging.setPageCount(numPages);
-        paging.setPageFactory(this::createPage);
-    
-        // paging.setOnMouseClicked(event -> {
-        //     int currentPageIndex = paging.getCurrentPageIndex();
-        //     System.out.println("Switched to page: " + currentPageIndex);
-        // });
+        paging.setPageFactory((Integer pageIndex) -> createPage(pageIndex, items));
     }
 
-    private VBox createPage(int pageIndex) {
+    private VBox createPage(int pageIndex, List items) {
         VBox pageBox = new VBox();
     
         int itemsPerPage = 12;
         int startIndex = pageIndex * itemsPerPage;
-        int endIndex = Math.min(startIndex + itemsPerPage, homeItems.size());
+        int endIndex = Math.min(startIndex + itemsPerPage, items.size());
     
-        addMediaHome(homeItems.subList(startIndex, endIndex));
+        addMediaHome(items.subList(startIndex, endIndex));
     
         return pageBox;
     }

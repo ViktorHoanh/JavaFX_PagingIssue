@@ -121,8 +121,8 @@ public class Media {
      * @return List Media
      * @throws SQLException
      */
-    public List<Media> getMediaByName(String name) throws SQLException {
-        List<Media> mediaList = new ArrayList<>();
+    public List getMediaByName(String name) throws SQLException {
+        List mediaList = new ArrayList<>();
         String sql = "SELECT * FROM Media WHERE title LIKE ?;";
         try (PreparedStatement preparedStatement = AIMSDB.getConnection().prepareStatement(sql)) {
             preparedStatement.setString(1, "%" + name + "%");

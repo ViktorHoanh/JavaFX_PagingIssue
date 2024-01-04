@@ -3,6 +3,7 @@ package controller;
 import entity.media.Media;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ public class HomeController extends BaseController {
      * @return List[Media]
      * @throws SQLException
      */
-    public List<Media> getMediaByName(String name) throws SQLException {
+    public List getMediaByName(String name) throws SQLException {
         return new Media().getMediaByName(name);
     }
 
